@@ -45,7 +45,8 @@ class Profiler:
         
         #print(unparse(newAst)) 
         try:
-            exec(compile(newAst, filename="<ast>", mode ="exec"), locals(), locals())
+            exec(compile(newAst, filename="<ast>", mode ="exec"),
+                  locals(), locals())
         except:
             print("An error ocurred! My injected code may cause problems")
 
