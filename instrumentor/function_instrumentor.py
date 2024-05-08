@@ -7,6 +7,7 @@ class FunctionInstrumentor(NodeTransformer):
         transformedNode = NodeTransformer.generic_visit(self, node)
         import_profile_inyected = parse("from function_profiler import FunctionProfiler")
         transformedNode.body.insert(0, import_profile_inyected.body[0])
+
         fix_missing_locations(transformedNode)
         return transformedNode
 
@@ -16,10 +17,12 @@ class FunctionInstrumentor(NodeTransformer):
         # Preparar el llamado a record_start
         argList = [arg.arg for arg in transformedNode.args.args]
         argNames = [Name(id=n, ctx=Load()) for n in argList]
-        argNames = [Constant(value=transformedNode.name), List(elts=argNames, ctx=Load())]
+        argNames = [Constant(value=transformedNode.name), 
+                    List(elts=argNames, ctx=Load())]
 
         before = Expr(value=Call(
-            func=Attribute(value=Name(id='FunctionProfiler', ctx=Load()), attr='record_start', ctx=Load()),
+            func=Attribute(value=Name(id='FunctionProfiler', ctx=Load()), 
+                           attr='record_start', ctx=Load()),
             args=argNames,
             keywords=[]
         ))
@@ -53,21 +56,24 @@ class FunctionInstrumentor(NodeTransformer):
             for i, stmt in enumerate(transformedNode.body):
                 if isinstance(stmt, Return):
                     new_return = Call(
-                        func=Attribute(value=Name(id='FunctionProfiler', ctx=Load()), attr='record_end', ctx=Load()),
+                        func=Attribute(value=Name(id='FunctionProfiler', 
+                                                  ctx=Load()), 
+                                       attr='record_end', ctx=Load()),
                         args=[Constant(value=transformedNode.name), stmt.value],
                         keywords=[]
                     )
                     transformedNode.body[i] = Return(value=new_return)
         else:
-            # Añadir record_end con `None` al final si no hay return explícito
+            # Agrrega record_end con un None cuanado no tenemos un return
             end_call = Expr(value=Call(
-                func=Attribute(value=Name(id='FunctionProfiler', ctx=Load()), attr='record_end', ctx=Load()),
+                func=Attribute(value=Name(id='FunctionProfiler', ctx=Load()),
+                                attr='record_end', ctx=Load()),
                 args=[Constant(value=transformedNode.name), Constant(value=None)],
                 keywords=[]
             ))
             transformedNode.body.append(end_call)
 
-        # Imprimir la función transformada
+        # Use astor para visualizar las inyecciones de codigo
         print(astor.to_source(transformedNode))
 
         return transformedNode

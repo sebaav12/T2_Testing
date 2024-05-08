@@ -21,7 +21,7 @@ class FunctionRecord:
         args_tuple = tuple(args)
         if args_tuple in self.results:
             if self.results[args_tuple] != result:
-                self.cacheable = False  # Inconsistencia entre resultados
+                self.cacheable = False  
         else:
             self.results[args_tuple] = result
 

@@ -4,7 +4,8 @@ from function_record import FunctionRecord
 
 # Clase que rastrea y reporta las funciones que se ejecutan
 class FunctionProfiler(Profiler):
-    call_stack = []  # Pila para rastrear llamadas de funciones
+    # Pila para rastrear llamadas de funciones
+    call_stack = []  
 
     # Metodo que se llama cada vez que se ejecuta una funcion
     @classmethod
@@ -16,17 +17,16 @@ class FunctionProfiler(Profiler):
         # Registrar la función desde la que se hizo la llamada
         if cls.call_stack:
             print(f"La función {cls.call_stack[-1]} llama a {functionName}")
-            record.add_caller(cls.call_stack[-1])  # La última función en la pila es el llamador
+            record.add_caller(cls.call_stack[-1])   
 
         print(f"Entrando a {functionName}")
 
-        # Agregar esta función al call_stack
+        # Agrega al call_stack
         cls.call_stack.append(functionName)
 
-         # Guarda los argumentos para usarlos en record_end (cache)
-        cls.current_args = args  # Asume que sólo se ejecuta una función a la vez o usa un diccionario si hay concurrencia
+        # Guarda los argumentos para usarlos en record_end (cache)
+        cls.current_args = args   
 
-  
     #   def record_end(cls, functionName, returnValue):
     #     cls.getInstance().fun_call_end(functionName, returnValue)
     #     return returnValue
