@@ -38,6 +38,8 @@ class FunctionProfiler(Profiler):
 
             # Guardar el resultado de la función para el cache
             record = cls.getInstance().get_record(functionName)
+
+            print(" El resultdo de " +str(functionName) +" es "+ str(returnValue))
             record.add_result(cls.current_args, returnValue)
 
             # Eliminar la función actual de la pila para el caller
@@ -84,7 +86,7 @@ class FunctionProfiler(Profiler):
 
     def print_fun_report(self):
         print("\n\nFunction Report")
-        self.evaluate_all_cacheable()
+        #self.evaluate_all_cacheable()
         print("{:<30} {:<10} {:<10} {:<10}".format('fun', 'freq', 'cache', 'callers'))
         for record in self.records.values():
             record.print_report()

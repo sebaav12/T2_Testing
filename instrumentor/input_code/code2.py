@@ -8,5 +8,4 @@ def factorial(n):
         answer = n * factorial(n-1)
     return answer
 
-
 factorial(5)
