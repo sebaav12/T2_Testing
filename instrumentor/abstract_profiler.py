@@ -37,9 +37,7 @@ class Profiler:
         instance = cls.getInstance()
         ast = cls.get_ast_from_file(fileName)
         newAst = cls.instrument(ast)
-
-        print("2.1")
-
+ 
         # Esta línea imprime el codigo modificado después de inyectarle líneas 
         # con el profiler pueden comentarla o descomentarla si quieren
         
