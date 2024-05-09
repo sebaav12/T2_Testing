@@ -40,7 +40,7 @@ class FunctionInstrumentor(NodeTransformer):
         new_body = []
         for stmt in transformedNode.body:
             if isinstance(stmt, Expr) and isinstance(stmt.value, Call) and isinstance(stmt.value.func, Name):
-                # Registrar la llamada interna en el perfilador
+                # Registrar la llamada interna  
                 internal_call = Expr(value=Call(
                     func=Attribute(value=Name(id='FunctionProfiler', ctx=Load()), attr='add_internal_call', ctx=Load()),
                     args=[Constant(value=stmt.value.func.id)],

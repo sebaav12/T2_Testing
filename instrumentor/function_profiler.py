@@ -27,9 +27,6 @@ class FunctionProfiler(Profiler):
         cls.call_stack.append(functionName)
 
         # Guarda los argumentos para usarlos en record_end (cache)
-
-        print("args en recod stat: " + str(args))
-        print("tipo " + str(type(args)))
         cls.current_args = args   
 
     #   def record_end(cls, functionName, returnValue):
@@ -38,27 +35,13 @@ class FunctionProfiler(Profiler):
     
     @classmethod
     def record_end(cls, functionName, returnValue):
-        print(f"Finalizando ejecución de {functionName}, retorno: {returnValue}")
+        print(f"Saliendo de {functionName}, retorno: {returnValue}")
         if cls.call_stack and cls.call_stack[-1] == functionName:
-
             # Guardar el resultado de la función para el cache
             record = cls.getInstance().get_record(functionName)
-
-            print(" El resultdo de " +str(functionName) +" es "+ str(returnValue))
             record.add_result(cls.current_args, returnValue)
-
-            print(" resultado agregado coectamente")
-
-            # Eliminar la función actual de la pila para el caller
-
-            print("call stck")
-            print(cls.call_stack)
+            # elimina de la pia
             cls.call_stack.pop()
-
-            print("call stck nuevo")
-            print(cls.call_stack)
-
-            print("se elimino")
         else:
             print(f"Error: Desbalance en la pila al salir de {functionName}")
 
@@ -67,8 +50,6 @@ class FunctionProfiler(Profiler):
 
     @classmethod
     def add_internal_call(cls, functionName):
-        """Añadir una llamada interna a la función en la parte superior de la pila."""
-        print("add_internal_call")
         if cls.call_stack:
             record = cls.getInstance().get_record(cls.call_stack[-1])
             record.add_internal_call(functionName)
@@ -76,7 +57,6 @@ class FunctionProfiler(Profiler):
     # Este metodo inyecta codigo en el programa segun el visitor del profiler
     @classmethod
     def instrument(cls, ast):
-        print("instrumentor")
         visitor = FunctionInstrumentor()
         return fix_missing_locations(visitor.visit(ast))
     
@@ -85,11 +65,8 @@ class FunctionProfiler(Profiler):
         self.records = {}
 
     def get_record(self, functionName):
-        print("get_record para " + str(functionName))
-        print(" self records: " + str(self.records))
         if functionName not in self.records:
             self.records[functionName] = FunctionRecord(functionName)
-            print("no estaba aca")
         return self.records[functionName]
 
     def fun_call_start(self, functionName, args):  
@@ -108,17 +85,3 @@ class FunctionProfiler(Profiler):
         print
         self.print_fun_report()
         return self.records
-
-
-
-# def factorial(n):
-#     FunctionProfiler.record_start('factorial', [n])
-#     if n == 0:
-#         result = 1
-#     else:
-#         print(type(factorial(n - 1)))
-#         result = n * factorial(n - 1)
-#     return FunctionProfiler.record_end('factorial', result)
-
-# Probar con `factorial(1)`
-#print(factorial(2))
