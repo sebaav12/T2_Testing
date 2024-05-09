@@ -4,6 +4,7 @@ import astor
 class FunctionInstrumentor(NodeTransformer):
 
     def visit_Module(self, node: Module):
+        print("Instrumentando módulo.")
         transformedNode = NodeTransformer.generic_visit(self, node)
         import_profile_inyected = parse("from function_profiler import FunctionProfiler")
         transformedNode.body.insert(0, import_profile_inyected.body[0])
@@ -12,6 +13,7 @@ class FunctionInstrumentor(NodeTransformer):
         return transformedNode
 
     def visit_FunctionDef(self, node: FunctionDef):
+        print(f"Instrumentando función: {node.name}")
         transformedNode = NodeTransformer.generic_visit(self, node)
 
         # Preparar el llamado a record_start
@@ -28,6 +30,7 @@ class FunctionInstrumentor(NodeTransformer):
         ))
 
         # Insertar record_start al principio de la función
+        print(f"Inyectando record_start en {node.name}")
         if isinstance(transformedNode.body, list):
             transformedNode.body.insert(0, before)
         else:
@@ -45,6 +48,7 @@ class FunctionInstrumentor(NodeTransformer):
                 ))
                 new_body.append(internal_call)
                 new_body.append(stmt)
+                print(f"Inyectando add_internal_call en {stmt.value.func.id}")
             else:
                 new_body.append(stmt)
 
@@ -63,6 +67,7 @@ class FunctionInstrumentor(NodeTransformer):
                         keywords=[]
                     )
                     transformedNode.body[i] = Return(value=new_return)
+                    print(f"Inyectando record_end en {node.name}")
         else:
             # Agrrega record_end con un None cuanado no tenemos un return
             end_call = Expr(value=Call(
@@ -72,8 +77,10 @@ class FunctionInstrumentor(NodeTransformer):
                 keywords=[]
             ))
             transformedNode.body.append(end_call)
+            print(f"Inyectando record_end con None en {node.name}")
 
         # Use astor para visualizar las inyecciones de codigo
         print(astor.to_source(transformedNode))
+        print(f"Código instrumentado para {node.name}:\n", astor.to_source(transformedNode))
 
         return transformedNode
