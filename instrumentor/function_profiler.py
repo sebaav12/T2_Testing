@@ -10,12 +10,14 @@ class FunctionProfiler(Profiler):
     # Metodo que se llama cada vez que se ejecuta una funcion
     @classmethod
     def record_start(cls, functionName, args):
+        print(f"Iniciando ejecución de {functionName} con argumentos {args}")
         instance = cls.getInstance()
         record = instance.get_record(functionName)
         record.increase_frequency()
 
         # Registrar la función desde la que se hizo la llamada
         if cls.call_stack:
+            print(f"{cls.call_stack[-1]} llama a {functionName}")
             print(f"La función {cls.call_stack[-1]} llama a {functionName}")
             record.add_caller(cls.call_stack[-1])   
 
@@ -33,26 +35,26 @@ class FunctionProfiler(Profiler):
     
     @classmethod
     def record_end(cls, functionName, returnValue):
-        print(f"Saliendo de {functionName}")
+        print(f"Saliendo de {functionName}, retorno: {returnValue}")
         if cls.call_stack and cls.call_stack[-1] == functionName:
-
             # Guardar el resultado de la función para el cache
             record = cls.getInstance().get_record(functionName)
             record.add_result(cls.current_args, returnValue)
-
-            # Eliminar la función actual de la pila para el caller
+            # elimina de la pia
             cls.call_stack.pop()
         else:
             print(f"Error: Desbalance en la pila al salir de {functionName}")
 
+        return returnValue
+        
+
     @classmethod
     def add_internal_call(cls, functionName):
-        """Añadir una llamada interna a la función en la parte superior de la pila."""
         if cls.call_stack:
             record = cls.getInstance().get_record(cls.call_stack[-1])
             record.add_internal_call(functionName)
 
-    # Este metodo inyecta codigo en el programa segun el visitor del profiler
+    # Este metodo inyecta codigo en el programa segun el visitor  
     @classmethod
     def instrument(cls, ast):
         visitor = FunctionInstrumentor()
@@ -73,24 +75,13 @@ class FunctionProfiler(Profiler):
     def fun_call_end(self, functionName, returnValue):
         pass
 
-    def evaluate_all_cacheable(self):
-        print("\n evaluate_all_cacheable")
-        """Evaluar si todas las funciones son cacheables."""
-        print(self.records.values())
-
-        for record in self.records.values():
-            print(record.functionName)
-            record.evaluate_cacheable(self.records)
-
     def print_fun_report(self):
-        print("\n\nFunction Report")
-        self.evaluate_all_cacheable()
+        print("\nFunction Report")
         print("{:<30} {:<10} {:<10} {:<10}".format('fun', 'freq', 'cache', 'callers'))
         for record in self.records.values():
             record.print_report()
         
     def report_executed_functions(self):
-        print("estoy en report_executed_functions")
-         
+        print
         self.print_fun_report()
         return self.records
