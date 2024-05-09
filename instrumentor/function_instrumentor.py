@@ -4,7 +4,7 @@ import astor
 class FunctionInstrumentor(NodeTransformer):
 
     def visit_Module(self, node: Module):
-        print("Instrumentando módulo.")
+        
         transformedNode = NodeTransformer.generic_visit(self, node)
         import_profile_inyected = parse("from function_profiler import FunctionProfiler")
         transformedNode.body.insert(0, import_profile_inyected.body[0])
@@ -17,10 +17,12 @@ class FunctionInstrumentor(NodeTransformer):
         transformedNode = NodeTransformer.generic_visit(self, node)
 
         # Preparar el llamado a record_start
-        argList = [arg.arg for arg in transformedNode.args.args]
-        argNames = [Name(id=n, ctx=Load()) for n in argList]
-        argNames = [Constant(value=transformedNode.name), 
+        argList = list(map(lambda x: x.arg, transformedNode.args.args))
+
+        argNames = list(map(lambda n: Name(id=n, ctx=Load()), argList))
+        argNames = [Constant(value=transformedNode.name),
                     List(elts=argNames, ctx=Load())]
+
 
         before = Expr(value=Call(
             func=Attribute(value=Name(id='FunctionProfiler', ctx=Load()), 
@@ -36,11 +38,11 @@ class FunctionInstrumentor(NodeTransformer):
         else:
             transformedNode.body = [before, node.body]
 
-        # Inyectar `add_internal_call` para cada llamada interna
+        # Inyecta add_internal_call para cada llamadas interna
         new_body = []
         for stmt in transformedNode.body:
             if isinstance(stmt, Expr) and isinstance(stmt.value, Call) and isinstance(stmt.value.func, Name):
-                # Registrar la llamada interna  
+                # Registra la llamada interna  
                 internal_call = Expr(value=Call(
                     func=Attribute(value=Name(id='FunctionProfiler', ctx=Load()), attr='add_internal_call', ctx=Load()),
                     args=[Constant(value=stmt.value.func.id)],
@@ -54,7 +56,7 @@ class FunctionInstrumentor(NodeTransformer):
 
         transformedNode.body = new_body
 
-        # Evaluar si hay un return explícito
+        # Evaluar si hay un return  
         has_return = any(isinstance(stmt, Return) for stmt in transformedNode.body)
         if has_return:
             for i, stmt in enumerate(transformedNode.body):

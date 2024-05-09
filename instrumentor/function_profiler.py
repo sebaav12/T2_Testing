@@ -54,7 +54,7 @@ class FunctionProfiler(Profiler):
             record = cls.getInstance().get_record(cls.call_stack[-1])
             record.add_internal_call(functionName)
 
-    # Este metodo inyecta codigo en el programa segun el visitor del profiler
+    # Este metodo inyecta codigo en el programa segun el visitor  
     @classmethod
     def instrument(cls, ast):
         visitor = FunctionInstrumentor()
